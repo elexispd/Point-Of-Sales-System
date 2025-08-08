@@ -31,11 +31,11 @@ class auth_api extends ceemain
         }
 
         // Validate input
-        $username = Input::post("username");
+        $username = Input::post("email");
         $password = Input::post("password");
 
         if (empty($username) || empty($password)) {
-            $response = ["status" => 0, "message" => "Username and password are required"];
+            $response = ["status" => 0, "message" => "Email and password are required"];
             echo json_encode($response);
             return;
         }
@@ -46,14 +46,10 @@ class auth_api extends ceemain
 
         if ($result != false) {
             // Fetch user details
-            $user = users_model::getUserByUsername($username);
+            $user = users_model::getUserByEmail($username);
             
             if($user["status"] == 1) {
                 $token = auth_model::generateToken($user);
-
-                $isPinnedChanged = wallet_model::isPinChanged($user['id']);
-                $user["isPinSet"] = $isPinnedChanged;
-                // Return success response
                 $response = [
                     "status" => 1,
                     "message" => "Login successful",

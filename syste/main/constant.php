@@ -10,7 +10,8 @@ $defaultcontroller = "main";
 
 
 
-
+define('SECRET_KEY', 'helloe-sellers');
+define('ALGORITHM',  'HS256');
 
 $SCHOOL_TITLE = "POS SYSTEM"; 
 $SCHOOL_CODE = "EPOS SYSTEM";

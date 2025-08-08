@@ -2,8 +2,9 @@
 <?php
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-class auth_model extends ceemain{
 
+class auth_model extends ceemain{
+    
     static function authorize() {
         $headers = getallheaders();
         $tokenHeader = $headers['Authorization'] ?? '';
@@ -16,7 +17,7 @@ class auth_model extends ceemain{
             // Check if the token has expired
             if (isset($decoded->exp) && $decoded->exp >= time()) {
                 // Token is valid, return the username
-                return $decoded->username;
+                return $decoded->email;
             } else {
                 // Token has expired
                 return false;
@@ -31,7 +32,7 @@ class auth_model extends ceemain{
         // JWT payload
         $payload = [
             "user_id" => $user["id"],
-            "username" => $user["username"],
+            "email" => $user["email"],
             "exp" => time() + (2 * 60 * 60) // 2 hours expiration
         ];
 
