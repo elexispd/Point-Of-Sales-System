@@ -8,8 +8,7 @@ class auth_model extends ceemain{
     static function authorize() {
         $headers = getallheaders();
         $tokenHeader = $headers['Authorization'] ?? '';
-        $token = str_replace('Bearer ', '', $tokenHeader);
-    
+        $token = str_replace('Bearer ', '', $tokenHeader);    
         try {
             // Decode the token
             $decoded = JWT::decode($token, new Key(SECRET_KEY, ALGORITHM));
