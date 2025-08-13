@@ -27,50 +27,58 @@ class products_model extends ceemain{
     
     public static function getProducts() {
         $key = configurations::systemkey();
-        $sql = "SELECT 
-                    id,
-                    AES_DECRYPT(name, '".$key."') AS name,
-                    AES_DECRYPT(brand, '".$key."') AS brand,
-                    AES_DECRYPT(category, '".$key."') AS category,
-                    AES_DECRYPT(stock, '".$key."') AS stock,
-                    AES_DECRYPT(price, '".$key."') AS price,
-                    AES_DECRYPT(status, '".$key."') AS status,
-                    AES_DECRYPT(created_at, '".$key."') AS created_at
-                FROM products
-                ";
         $conn = db::createion();
+
+        $sql = "SELECT 
+                    p.id,
+                    AES_DECRYPT(p.name, '".$key."') AS name,
+                    AES_DECRYPT(p.brand, '".$key."') AS brand,
+                    AES_DECRYPT(p.category, '".$key."') AS category,
+                    AES_DECRYPT(c.name, '".$key."') AS category_name,
+                    AES_DECRYPT(p.stock, '".$key."') AS stock,
+                    AES_DECRYPT(p.price, '".$key."') AS price,
+                    AES_DECRYPT(p.status, '".$key."') AS status,
+                    AES_DECRYPT(p.created_at, '".$key."') AS created_at
+                FROM products p
+                LEFT JOIN categories c 
+                    ON AES_DECRYPT(p.category, '".$key."') = c.id";
+
         $result = $conn->query($sql);
-    
+
         if ($result) {
-            $permissions = [];
+            $products = [];
             while ($row = $result->fetch_assoc()) {
-                $permissions[] = $row;
+                $products[] = $row;
             }
-            return $permissions; // Return the list of permissions with wallet details
+            return $products;
         } else {
-            return []; // Return an empty array if the query fails
+            return [];
         }
     }
-    
 
-    static function getProductById($id) {
+    public static function getProductById($id) {
         $key = configurations::systemkey();
-        $sql = "SELECT 
-                    id,
-                    AES_DECRYPT(name, '".$key."') AS name,
-                    AES_DECRYPT(brand, '".$key."') AS brand,
-                    AES_DECRYPT(category, '".$key."') AS category,
-                    AES_DECRYPT(stock, '".$key."') AS stock,
-                    AES_DECRYPT(price, '".$key."') AS price,
-                    AES_DECRYPT(status, '".$key."') AS status,
-                    AES_DECRYPT(created_at, '".$key."') AS created_at
-                    FROM products 
-                    WHERE id = $id
-                ";
         $conn = db::createion();
+
+        $sql = "SELECT 
+                    p.id,
+                    AES_DECRYPT(p.name, '".$key."') AS name,
+                    AES_DECRYPT(p.brand, '".$key."') AS brand,
+                    AES_DECRYPT(p.category, '".$key."') AS category,
+                    AES_DECRYPT(c.name, '".$key."') AS category_name,
+                    AES_DECRYPT(p.stock, '".$key."') AS stock,
+                    AES_DECRYPT(p.price, '".$key."') AS price,
+                    AES_DECRYPT(p.status, '".$key."') AS status,
+                    AES_DECRYPT(p.created_at, '".$key."') AS created_at
+                FROM products p
+                LEFT JOIN categories c 
+                    ON AES_DECRYPT(p.category, '".$key."') = c.id
+                WHERE p.id = $id";
+
         $result = $conn->query($sql);
         return $result->fetch_assoc();
     }
+
 
 
     static function updateStatus($id, $status) {

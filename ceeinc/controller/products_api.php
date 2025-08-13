@@ -73,10 +73,10 @@ class products_api extends ceemain
                 $result = products_model::getProducts();
                 if($result) {
                     http_response_code(200); // OK
-                    $response = ["status" => 1, "message" => "Permissionss Retrieved successfully", 'data' => $result];
+                    $response = ["status" => 1, "message" => "Products Retrieved successfully", 'data' => $result];
                 } else {
                     http_response_code(404); // Not Found
-                    $response = ["status" => 0, "message" => "Permissions not found"];
+                    $response = ["status" => 0, "message" => "Products not found", 'data' => []];
                 }               
             } else {
                 http_response_code(401); // Unauthorized

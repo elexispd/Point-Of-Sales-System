@@ -79,7 +79,7 @@ class stocks_api extends ceemain
                     $response = ["status" => 1, "message" => "Stocks Retrieved successfully", 'data' => $result];
                 } else {
                     http_response_code(404); // Not Found
-                    $response = ["status" => 0, "message" => "Permissions not found"];
+                    $response = ["status" => 0, "message" => "Stock not found", 'data' => []];
                 }               
             } else {
                 http_response_code(401); // Unauthorized
