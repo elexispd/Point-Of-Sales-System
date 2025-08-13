@@ -90,6 +90,16 @@ class supplies_model extends ceemain{
         return $result;
     }
 
+    public static function delete($id) {
+        $key = configurations::systemkey();
+        $sql = "DELETE FROM supplies WHERE id = ?";
+        $conn = db::createion();
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id);
+        $result = $stmt->execute();
+        return $result;
+    }
+
 
     
 

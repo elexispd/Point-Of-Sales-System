@@ -120,6 +120,38 @@ class supplies_api extends ceemain
         echo json_encode($response);
     }
    
+    function delete() {
+        $response = [];
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            // Authorize the request
+            $auth = auth_model::authorize();            
+            if ($auth) {
+                $supplier_id = Input::post('supplier_id');   
+
+                if(!empty($supplier_id)) {                   
+                    $result = supplies_model::delete($supplier_id);
+                    if($result) {
+                        http_response_code(201); // Created
+                        $response = ["status" => 1, "message" => "Supplier Deleted Successful"];
+                    } else {
+                        http_response_code(400); // Bad Request
+                        $response = ["status" => 0, "message" => "Failed to delete supplier"];
+                    }
+                } else {
+                    http_response_code(400); // Bad Request
+                    $response = ["status" => 0, "message" => "All fields are required"];
+                }
+            } else {
+                http_response_code(401); // Unauthorized
+                $response = ["status" => 0, "message" => "Unauthorized"];
+            }
+        } else {
+            http_response_code(405); // Method Not Allowed
+            $response = ["status" => 0, "message" => "Method not allowed"];
+        }
+        echo json_encode($response);
+    }
+   
     
 
  
