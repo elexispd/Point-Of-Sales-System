@@ -1,7 +1,4 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: PUT, POST, OPTIONS');
@@ -14,46 +11,7 @@ header('Content-Type: application/json');
 class roles_api extends ceemain
 {
     
-    function create2() {
-        $response = [];
-        if ($_SERVER["REQUEST_METHOD"] === "POST") {
-            // Authorize the request
-            $auth = auth_model::authorize();            
-            if ($auth) {
-                $name = Input::post('name');   
-                $name = strtolower($name); 
-                if(!empty($name) ) {
-                    $is_exit = roles_model::isRoleExist($name);
 
-                    if($is_exit > 0) {
-                        http_response_code(400); // Bad Request
-                        $response = ["status" => 0, "message" => "Role already exists"];
-                        echo json_encode($response);
-                        return;
-                    }
-                    $result = roles_model::store($name);
-
-                    if($result) {
-                        http_response_code(201); // Created
-                        $response = ["status" => 1, "message" => "Role created successfully", 'data' => $name];
-                    } else {
-                        http_response_code(400); // Bad Request
-                        $response = ["status" => 0, "message" => "Failed to create role"];
-                    }
-                } else {
-                    http_response_code(400); // Bad Request
-                    $response = ["status" => 0, "message" => "All fields are required"];
-                }
-            } else {
-                http_response_code(401); // Unauthorized
-                $response = ["status" => 0, "message" => "Unauthorized"];
-            }
-        } else {
-            http_response_code(405); // Method Not Allowed
-            $response = ["status" => 0, "message" => "Method not allowed"];
-        }
-        echo json_encode($response);
-    }
     
     function create() {
         $response = [];

@@ -1,6 +1,5 @@
 <?php
 
-
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: PUT, POST, OPTIONS');
 header('Access-Control-Max-Age: 1000');
@@ -9,7 +8,7 @@ header('Content-Type: application/json');
 
 
 
-class permissions_api extends ceemain
+class products_api extends ceemain
 {
     
     function create() {
@@ -19,24 +18,35 @@ class permissions_api extends ceemain
             $auth = auth_model::authorize();            
             if ($auth) {
                 $name = Input::post('name');   
-                $name = strtolower($name); 
-                if(!empty($name) ) {
-                    $is_exit = permissions_model::isPermissionExist($name);
-
+                $brand = Input::post('brand');   
+                $name = strtolower(trim($name)); 
+                $brand = strtolower(trim($brand)); 
+                $category = Input::post('category');
+                $stock = Input::post('stock');
+                $price = Input::post('price');
+                if(!empty($name) && !empty($brand) && !empty($category) && !empty($stock) && !empty($price)) {
+                    $is_exit = products_model::isProductExist($name, $brand);
                     if($is_exit > 0) {
                         http_response_code(400); // Bad Request
-                        $response = ["status" => 0, "message" => "Permissions already exists"];
+                        $response = ["status" => 0, "message" => "Product already exists. Please Stock in instead"];
                         echo json_encode($response);
                         return;
                     }
-                    $result = permissions_model::store($name);
+                    $result = products_model::store($name, $brand, $category, $stock, $price);
 
                     if($result) {
+                        $product = [
+                            "name" => $name,
+                            "brand" => $brand,
+                            "category" => $category,
+                            "stock" => $stock,
+                            "price" => $price
+                        ];
                         http_response_code(201); // Created
-                        $response = ["status" => 1, "message" => "Permissions created successfully", 'data' => $name];
+                        $response = ["status" => 1, "message" => "Product created successfully", 'data' => $product];
                     } else {
                         http_response_code(400); // Bad Request
-                        $response = ["status" => 0, "message" => "Failed to create Permissions"];
+                        $response = ["status" => 0, "message" => "Failed to create Product"];
                     }
                 } else {
                     http_response_code(400); // Bad Request
@@ -53,14 +63,14 @@ class permissions_api extends ceemain
         echo json_encode($response);
     }
    
-    function getAllPermissions() {
+    function getAllProducts() {
         $response = [];
         if ($_SERVER["REQUEST_METHOD"] === "GET") {
             // Authorize the request
             $auth = auth_model::authorize();
             
             if ($auth) {
-                $result = permissions_model::getPermissions();
+                $result = products_model::getProducts();
                 if($result) {
                     http_response_code(200); // OK
                     $response = ["status" => 1, "message" => "Permissionss Retrieved successfully", 'data' => $result];
@@ -79,27 +89,26 @@ class permissions_api extends ceemain
         echo json_encode($response);
     }
 
-    function getPermissionById()
+    function getProductById()
     {
         $response = [];
         if ($_SERVER["REQUEST_METHOD"] === "GET") {
             // Authorize the request
-            $auth = auth_model::authorize();
-            
+            $auth = auth_model::authorize();            
             if ($auth) {
-                $id = Input::get('permission_id');
+                $id = Input::get('product_id');
                 if(!empty($id)) {
-                    $result = permissions_model::getPermissionById($id);
+                    $result = products_model::getProductById($id);
                     if($result) {
                         http_response_code(200); // OK
-                        $response = ["status" => 1, "message" => "Permissions Found successfully", 'data' => $result];
+                        $response = ["status" => 1, "message" => "Product Found successfully", 'data' => $result];
                     } else {
                         http_response_code(404); // Not Found
-                        $response = ["status" => 0, "message" => "No Permissions found"];
+                        $response = ["status" => 0, "message" => "No Product found"];
                     }
                 } else {
                     http_response_code(400); // Bad Request
-                    $response = ["status" => 0, "message" => "Permission ID is required"];
+                    $response = ["status" => 0, "message" => "Product ID is required"];
                 }
             } else {
                 http_response_code(401); // Unauthorized
@@ -120,11 +129,11 @@ class permissions_api extends ceemain
             $auth = auth_model::authorize();
             
             if ($auth) {
-                $id = Input::post('permission_id');
+                $id = Input::post('product_id');
                 $status = Input::post('status');
 
                 if(! (empty($id) && empty($status))) {
-                    $result = permissions_model::updatePermissionStatus($id, $status);
+                    $result = products_model::updateStatus($id, $status);
                     
                     if($result) {
                         if($status ==1) {
@@ -138,14 +147,14 @@ class permissions_api extends ceemain
                             return;
                         }
                         http_response_code(200); // OK
-                        $response = ["status" => 1, "message" => "Permissions status $statusMessage successfully"];
+                        $response = ["status" => 1, "message" => "Product status $statusMessage successfully"];
                     } else {
                         http_response_code(400); // Bad Request
-                        $response = ["status" => 0, "message" => "Failed to update Permissions status"];
+                        $response = ["status" => 0, "message" => "Failed to update Product status"];
                     }
                 } else {
                     http_response_code(400); // Bad Request
-                    $response = ["status" => 0, "message" => "Permissions ID and status are required"];
+                    $response = ["status" => 0, "message" => "Product ID and status are required"];
                 }
                 
             } else {
@@ -159,7 +168,7 @@ class permissions_api extends ceemain
         echo json_encode($response);
     }
 
-    function changePermissionName() {
+    function updateProduct() {
         $response = [];
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
             // Authorize the request
@@ -167,24 +176,28 @@ class permissions_api extends ceemain
             if ($auth) {
                 $email = $auth;
                 $name = Input::post('name');
-                $id = Input::post('permission_id');
+                $id = Input::post('product_id');
+                $brand = Input::post('brand');
+                $category = Input::post('category');
+                $stock = Input::post('stock');
+                $price = Input::post('price');
 
-                $result = permissions_model::changeName($id, $name);
+                $result = products_model::updateProduct($id, $name, $brand, $category, $stock, $price);
                 if ($result) {
                     // Regenerate the JWT token after password change
-                    $Permissions = permissions_model::getPermissionById($id);
+                    $product = products_model::getProductById($id);
                     http_response_code(200); // OK
                     $response = [
                         "status" => 1,
-                        "message" => "Permissions Name updated successfully",
-                        "data" => $Permissions 
+                        "message" => "Product updated successfully",
+                        "data" => $product
                     ];
                     
                 } else {
                     http_response_code(400); // Bad Request
                     $response = [
                         "status" => 0,
-                        "message" => "Failed to update Permissions"
+                        "message" => "Failed to update Product"
                     ];
                 }
               
@@ -207,7 +220,7 @@ class permissions_api extends ceemain
         echo json_encode($response);
     }
 
-    function getTotalPermissions()
+    function getTotalProducts()
     {
         $response = [];
         if ($_SERVER["REQUEST_METHOD"] === "GET") {
@@ -215,10 +228,10 @@ class permissions_api extends ceemain
             $auth = auth_model::authorize();
             
             if ($auth) {
-                $result = permissions_model::getTotalPermissions();
+                $result = products_model::getTotalProducts();
                 if($result) {
                     http_response_code(200); // OK
-                    $response = ["status" => 1, "message" => "Total Permissions Found successfully", 'data' => $result];
+                    $response = ["status" => 1, "message" => "Total Products Found successfully", 'data' => $result];
                 } else {
                     http_response_code(404); // Not Found
                     $response = ["status" => 0, "message" => "No Permissions found"];
