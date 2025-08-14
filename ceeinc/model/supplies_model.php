@@ -53,7 +53,6 @@ class supplies_model extends ceemain{
     public static function getSupplierById($id) {
         $key = configurations::systemkey();
         $conn = db::createion();
-
         $sql = "SELECT 
                     id,
                     AES_DECRYPT(name, '".$key."') AS name,
@@ -62,17 +61,10 @@ class supplies_model extends ceemain{
                     AES_DECRYPT(address, '".$key."') AS address,
                     AES_DECRYPT(status, '".$key."') AS status,
                     AES_DECRYPT(created_at, '".$key."') AS created_at
-                FROM supplies WHERE id = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result) {
-            return $result->fetch_assoc();
-        } else {
-            return null;
-        }
+                FROM supplies WHERE id = $id";
+        $conn = db::createion();
+        $result = $conn->query($sql);
+        return $result->fetch_assoc();
     }
 
     public static function edit($id, $name, $contact, $email, $address) {

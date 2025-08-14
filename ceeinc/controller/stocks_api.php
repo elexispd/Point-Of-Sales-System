@@ -224,6 +224,45 @@ class stocks_api extends ceemain
         echo json_encode($response);
     }
 
+    function searchStock() {
+        $response = [];
+        if ($_SERVER["REQUEST_METHOD"] === "GET") {
+            // Authorize the request
+            $auth = auth_model::authorize();
+            if ($auth) {
+                $start_date = Input::get('start_date');
+                $end_date = Input::get('end_date');
+                $product_id = Input::get('product_id');
+                $supplier = Input::get('supplier');
+                $stock_type = Input::get('stock_type');
+                $brand = Input::get('brand');
+                $category = Input::get('category');
+
+                $start_date = str_replace('-', '/', $start_date);
+                $end_date = str_replace('-', '/', $end_date);
+
+                $result = stocks_model::searchStocks($start_date, $end_date, $product_id, $supplier, $stock_type, $brand, $category);
+                
+                if($result) {
+                    http_response_code(response_code: 200); // OK
+                    $response = ["status" => 1, "message" => "Stocks Found successfully", 'data' => $result];
+                } else {
+                    http_response_code(404); // Not Found
+                    $response = ["status" => 0, "message" => "No Stock found", 'data' => []];
+                }
+            } else {
+                http_response_code(401); // Unauthorized
+                $response = ["status" => 0, "message" => "Unauthorized"];
+            }
+        } else {
+            http_response_code(405); // Method Not Allowed
+            $response = ["status" => 0, "message" => "Method not allowed"];
+        }
+        echo json_encode($response);
+    }
+
+    
+
     
 
  

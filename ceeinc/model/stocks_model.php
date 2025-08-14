@@ -151,6 +151,70 @@ class stocks_model extends ceemain{
         return $result;
     }
 
+    public static function searchStocks($start_date = null, $end_date = null, $product_id = null, $supplier = null, $stock_type = null, $brand = null, $category = null) {
+        $key = configurations::systemkey();
+        $conn = db::createion();
+
+        // Convert dates from MM/DD/YYYY to YmdHis
+        if (!empty($start_date)) {
+            $start_date = DateTime::createFromFormat('m/d/Y', $start_date)->format('Ymd') . "000000";
+        }
+        if (!empty($end_date)) {
+            $end_date = DateTime::createFromFormat('m/d/Y', $end_date)->format('Ymd') . "235959";
+        }
+
+        $sql = "SELECT 
+                    s.id,
+                    AES_DECRYPT(s.product_id, '".$key."') AS product_id,
+                    AES_DECRYPT(p.name, '".$key."') AS product_name,
+                    AES_DECRYPT(p.brand, '".$key."') AS brand,
+                    AES_DECRYPT(p.category, '".$key."') AS category,
+                    AES_DECRYPT(s.quantity, '".$key."') AS quantity,
+                    AES_DECRYPT(s.supplier, '".$key."') AS supplier,
+                    AES_DECRYPT(s.stock_type, '".$key."') AS stock_type,
+                    AES_DECRYPT(s.created_at, '".$key."') AS created_at
+                FROM stocks s
+                INNER JOIN products p 
+                    ON p.id = CAST(AES_DECRYPT(s.product_id, '".$key."') AS UNSIGNED)
+                WHERE 1=1";
+
+        // Apply filters dynamically
+        if (!empty($start_date)) {
+            $sql .= " AND AES_DECRYPT(s.created_at, '".$key."') >= '".$conn->real_escape_string($start_date)."'";
+        }
+        if (!empty($end_date)) {
+            $sql .= " AND AES_DECRYPT(s.created_at, '".$key."') <= '".$conn->real_escape_string($end_date)."'";
+        }
+        if (!empty($product_id)) {
+            $sql .= " AND AES_DECRYPT(s.product_id, '".$key."') = '".$conn->real_escape_string($product_id)."'";
+        }
+        if (!empty($supplier)) {
+            $sql .= " AND AES_DECRYPT(s.supplier, '".$key."') LIKE '%".$conn->real_escape_string($supplier)."%'";
+        }
+        if (!empty($stock_type)) {
+            $sql .= " AND AES_DECRYPT(s.stock_type, '".$key."') LIKE '%".$conn->real_escape_string($stock_type)."%'";
+        }
+        if (!empty($brand)) {
+            $sql .= " AND AES_DECRYPT(p.brand, '".$key."') LIKE '%".$conn->real_escape_string($brand)."%'";
+        }
+        if (!empty($category)) {
+            $sql .= " AND AES_DECRYPT(p.category, '".$key."') LIKE '%".$conn->real_escape_string($category)."%'";
+        }
+
+        $result = $conn->query($sql);
+
+        if ($result && $result->num_rows > 0) {
+            $stocks = [];
+            while ($row = $result->fetch_assoc()) {
+                $stocks[] = $row;
+            }
+            return $stocks;
+        } else {
+            return [];
+        }
+    }
+
+
   
 
 

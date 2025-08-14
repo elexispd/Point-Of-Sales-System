@@ -77,6 +77,32 @@ class supplies_api extends ceemain
         }
         echo json_encode($response);
     }
+    function getSupplierById() {
+        $response = [];
+        if ($_SERVER["REQUEST_METHOD"] === "GET") {
+            // Authorize the request
+            $auth = auth_model::authorize();
+            
+            if ($auth) {
+                $id = Input::get('supplier_id');
+                $result = supplies_model::getSupplierById($id);
+                if($result) {
+                    http_response_code(200); // OK
+                    $response = ["status" => 1, "message" => "Suppliers Retrieved successfully", 'data' => $result];
+                } else {
+                    http_response_code(404); // Not Found
+                    $response = ["status" => 0, "message" => "Suppliers not found", 'data' => []];
+                }               
+            } else {
+                http_response_code(401); // Unauthorized
+                $response = ["status" => 0, "message" => "Unauthorized"];
+            }
+        } else {
+            http_response_code(405); // Method Not Allowed
+            $response = ["status" => 0, "message" => "Method not allowed"];
+        }
+        echo json_encode($response);
+    }
 
     function edit() {
         $response = [];
