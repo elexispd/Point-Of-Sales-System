@@ -53,12 +53,22 @@ class auth_api extends ceemain
                     "token" => $token,
                     "data" => $user
                 ];
+                $user_id = $user["id"];
+                $action  = 'User Login';
+                $time = date('Y-m-d H:i:s');
+                $desc = 'User logged in with email: ' . $username . ' at '. $time;
+                logs_model::activity_log($user_id, $action, $desc);
             } else {
                 // user is not active
                 $response = [
                     "status" => 1,
                     "message" => "Account Suspended... Please Contact The Administrator.",
                 ];
+                $user_id = $user["id"];
+                $action  = 'User Login';
+                $desc = 'User Tried to log in with email: ' . $username;
+                logs_model::activity_log($user_id, $action, $desc);
+                
             }
 
             

@@ -33,7 +33,8 @@ class products_api extends ceemain
                         return;
                     }
                     $result = products_model::store($name, $brand, $category, $stock, $price);
-
+                    $action = "Create Product";
+                    $user_id = users_model::getUserByEmail($auth)['id'];        
                     if($result) {
                         $product = [
                             "name" => $name,
@@ -44,9 +45,13 @@ class products_api extends ceemain
                         ];
                         http_response_code(201); // Created
                         $response = ["status" => 1, "message" => "Product created successfully", 'data' => $product];
+                        $desc= 'Added product of name: ' . $name;                    
+                        logs_model::activity_log($user_id, $action, $desc);
                     } else {
                         http_response_code(400); // Bad Request
                         $response = ["status" => 0, "message" => "Failed to create Product"];
+                        $desc= 'Tried and failed to add product of name: ' . $name;                    
+                        logs_model::activity_log($user_id, $action, $desc);
                     }
                 } else {
                     http_response_code(400); // Bad Request
@@ -134,15 +139,22 @@ class products_api extends ceemain
 
                 if(! (empty($id) && empty($status))) {
                     $result = products_model::updateStatus($id, $status);
-                    
+                    $action = "Activate Product";
+                    $user_id = users_model::getUserByEmail($auth)['id'];  
                     if($result) {
                         if($status ==1) {
                             $statusMessage = "activated";
+                            $desc= 'Activated product of ID: ' . $id;                    
+                            logs_model::activity_log($user_id, $action, $desc);
                         } elseif($status == 0) {
                             $statusMessage = "deactivated";
+                            $desc= 'Deactivated product of ID: ' . $id;                    
+                            logs_model::activity_log($user_id, $action, $desc);
                         } else {
                             http_response_code(400); // Bad Request
                             $response = ["status" => 0, "message" => "Invalid status value"];
+                            $desc= 'Tried and Failed to activate product of ID: ' . $id;                    
+                            logs_model::activity_log($user_id, $action, $desc);
                             echo json_encode($response);
                             return;
                         }
@@ -183,6 +195,8 @@ class products_api extends ceemain
                 $price = Input::post('price');
 
                 $result = products_model::updateProduct($id, $name, $brand, $category, $stock, $price);
+                $action = "Change Product";
+                $user_id = users_model::getUserByEmail($auth)['id'];  
                 if ($result) {
                     // Regenerate the JWT token after password change
                     $product = products_model::getProductById($id);
@@ -192,6 +206,10 @@ class products_api extends ceemain
                         "message" => "Product updated successfully",
                         "data" => $product
                     ];
+                    $desc= 'Changed Product name to: ' . $name;
+                    $action = "Change Product Name";
+                    logs_model::activity_log($user_id, $action, $desc);
+                    
                     
                 } else {
                     http_response_code(400); // Bad Request

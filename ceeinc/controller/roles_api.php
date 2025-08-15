@@ -23,6 +23,9 @@ class roles_api extends ceemain
                 return;
             }
 
+            $action = "Create Roles";
+            $user_id = users_model::getUserByEmail($auth)['id'];  
+
             $name = strtolower(trim(Input::post('name')));
             $permissions = $_POST["permissions"]; // array of permission IDs
 
@@ -45,22 +48,23 @@ class roles_api extends ceemain
                 return;
             }
 
+            
+
             $conn = db::createion();
             $conn->begin_transaction();
 
             try {
-                $role_id = roles_model::store($name); // Make sure store() returns inserted ID
+                $role_id = roles_model::store($name); // return ID 
                 if (!$role_id) {
                     throw new Exception("Failed to create role");
                 }
 
                 foreach ($permissions as $perm_id) {
-                    // ✅ Check if permission exists
                     if (!permissions_model::isPermissionExistById($perm_id)) {
                         throw new Exception("Permission with ID $perm_id does not exist");
                     }
 
-                    // ✅ Skip if role-permission already exists
+                    //Skip if role-permission already exists
                     if (!roles_model::isRolePermissionExist($role_id, $perm_id)) {
                         if (!roles_model::storeRolePermission($role_id, $perm_id)) {
                             throw new Exception("Failed to assign permission ID $perm_id");
@@ -72,10 +76,14 @@ class roles_api extends ceemain
                 http_response_code(201);
                 $response = ["status" => 1, "message" => "Role and permissions created successfully"];
 
+                $desc= 'Added role of name: ' . $name;                    
+                logs_model::activity_log($user_id, $action, $desc);
             } catch (Exception $e) {
                 $conn->rollback();
                 http_response_code(400);
                 $response = ["status" => 0, "message" => $e->getMessage()];
+                $desc= 'Failed To add role of name: ' . $name;                    
+                logs_model::activity_log($user_id, $action, $desc);
             }
 
             echo json_encode($response);
@@ -278,7 +286,6 @@ class roles_api extends ceemain
             $name = strtolower(trim(Input::post('name')));
             $permissions = $_POST['permissions']; // array or null
 
-            // ✅ Check if role exists
             $existingRole = roles_model::getRoleById($id);
             if (!$existingRole) {
                 http_response_code(404);
@@ -288,9 +295,11 @@ class roles_api extends ceemain
 
             $conn = db::createion();
             $conn->begin_transaction();
+            
+            $action = "Change Role";
+            $user_id = users_model::getUserByEmail($auth)['id'];  
 
             try {
-                // ✅ Update name if provided and different
                 if (!empty($name) && $name !== strtolower($existingRole['role'])) {
                     if (roles_model::isRoleExist($name) > 0) {
                         throw new Exception("Role name already exists");
@@ -300,25 +309,20 @@ class roles_api extends ceemain
                     }
                 }
 
-                // Update permissions if provided
                 if (is_array($permissions)) {
-                    // 1. Validate each permission exists
                     foreach ($permissions as $perm_id) {
                         if (!permissions_model::isPermissionExistById($perm_id)) {
                             throw new Exception("Permission with ID $perm_id does not exist");
                         }
                     }
 
-                    // 2. Get current permissions
                     $currentPerms = roles_model::getPermissionIdsByRole($id);
 
-                    // 3. Find permissions to remove
                     $toRemove = array_diff($currentPerms, $permissions);
                     foreach ($toRemove as $perm_id) {
                         roles_model::removeRolePermission($id, $perm_id);
                     }
 
-                    // 4. Find permissions to add
                     $toAdd = array_diff($permissions, $currentPerms);
                     foreach ($toAdd as $perm_id) {
                         roles_model::storeRolePermission($id, $perm_id);
@@ -329,10 +333,15 @@ class roles_api extends ceemain
                 http_response_code(200);
                 $response = ["status" => 1, "message" => "Role updated successfully"];
 
+                $desc= 'Changed role of name: ' . $name;                    
+                logs_model::activity_log($user_id, $action, $desc);
+
             } catch (Exception $e) {
                 $conn->rollback();
                 http_response_code(400);
                 $response = ["status" => 0, "message" => $e->getMessage()];
+                $desc= 'Changed role of name: ' . $name;                    
+                logs_model::activity_log($user_id, $action, $desc);
             }
 
             echo json_encode($response);

@@ -34,9 +34,17 @@ class permissions_api extends ceemain
                     if($result) {
                         http_response_code(201); // Created
                         $response = ["status" => 1, "message" => "Permissions created successfully", 'data' => $name];
+                        $user_id = users_model::getUserByEmail($auth)['id'];
+                        $action = 'Create Permission';
+                        $desc= 'Added permission of name: ' . $name;
+                        logs_model::activity_log($user_id, $action, $desc);
                     } else {
                         http_response_code(400); // Bad Request
                         $response = ["status" => 0, "message" => "Failed to create Permissions"];
+                        $user_id = users_model::getUserByEmail($auth)['id'];
+                        $action = 'Create Permission';
+                        $desc= 'Failed to add permission of name: ' . $name;
+                        logs_model::activity_log($user_id, $action, $desc);
                     }
                 } else {
                     http_response_code(400); // Bad Request
@@ -127,18 +135,28 @@ class permissions_api extends ceemain
                     $result = permissions_model::updatePermissionStatus($id, $status);
                     
                     if($result) {
+                        $user_id = users_model::getUserByEmail($auth)['id'];
+                        $action = 'Update Permission Status';
+                        
                         if($status ==1) {
                             $statusMessage = "activated";
+                            $desc= 'Activated permission to: ' . $statusMessage;
+                            logs_model::activity_log($user_id, $action, $desc);
                         } elseif($status == 0) {
                             $statusMessage = "deactivated";
+                            $desc= 'Disactivated permission to: ' . $statusMessage;
+                            logs_model::activity_log($user_id, $action, $desc);
                         } else {
                             http_response_code(400); // Bad Request
                             $response = ["status" => 0, "message" => "Invalid status value"];
                             echo json_encode($response);
+                            $desc= 'Failed to activate/deactive permission of id: ' . $id;
+                            logs_model::activity_log($user_id, $action, $desc);
                             return;
                         }
                         http_response_code(200); // OK
                         $response = ["status" => 1, "message" => "Permissions status $statusMessage successfully"];
+
                     } else {
                         http_response_code(400); // Bad Request
                         $response = ["status" => 0, "message" => "Failed to update Permissions status"];
@@ -168,7 +186,7 @@ class permissions_api extends ceemain
                 $email = $auth;
                 $name = Input::post('name');
                 $id = Input::post('permission_id');
-
+                $user_id = users_model::getUserByEmail($auth)['id'];
                 $result = permissions_model::changeName($id, $name);
                 if ($result) {
                     // Regenerate the JWT token after password change
@@ -179,6 +197,10 @@ class permissions_api extends ceemain
                         "message" => "Permissions Name updated successfully",
                         "data" => $Permissions 
                     ];
+
+                    $desc= 'Changed permission name to: ' . $name;
+                    $action = "change Permission Name";
+                    logs_model::activity_log($user_id, $action, $desc);
                     
                 } else {
                     http_response_code(400); // Bad Request
@@ -186,6 +208,9 @@ class permissions_api extends ceemain
                         "status" => 0,
                         "message" => "Failed to update Permissions"
                     ];
+                    $desc= 'Failed to change permission name to: ' . $name;
+                    $action = "Change Permission Name";
+                    logs_model::activity_log($user_id, $action, $desc);
                 }
               
             } else {

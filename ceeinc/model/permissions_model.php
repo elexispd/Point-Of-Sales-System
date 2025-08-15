@@ -36,7 +36,7 @@ class permissions_model extends ceemain{
             while ($row = $result->fetch_assoc()) {
                 $permissions[] = $row;
             }
-            return $permissions; // Return the list of permissions with wallet details
+            return $permissions; // Return the list of permissions 
         } else {
             return []; // Return an empty array if the query fails
         }

@@ -25,6 +25,11 @@ class expenses_api extends ceemain
                 if(!empty($type) && !empty($description) && !empty($amount) ) {
                     $result = expenses_model::store($type, $description, $amount, $date);
 
+                    $user_id = users_model::getUserByEmail($auth)['id'];
+                    $action = 'Create Expenses';
+                    $desc= 'Made expenses of type: ' . $type . ', amount: ' . $amount . ', date: ' . $date;
+                    logs_model::activity_log($user_id, $action, $desc);
+
                     if($result) {
                         $expenses = [
                             "type" => $type,
