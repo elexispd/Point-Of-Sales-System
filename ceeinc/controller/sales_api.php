@@ -21,6 +21,9 @@ class sales_api extends ceemain
                 $quantity = Input::post('quantity');   
                 $cashier_id = Input::post('cashier_id');   
                 $price = Input::post('price');   
+                $discount = Input::post('discount') ?: 0;
+                $tax = Input::post('tax') ?: 0;
+                $shipping_cost = Input::post('shipping_cost') ?: 0;   
                 $subtotal = Input::post('subtotal');   
                 $payment_method = Input::post('payment_method');   
                 $subtotal = strtolower(trim($subtotal)); 
@@ -32,7 +35,7 @@ class sales_api extends ceemain
                         echo json_encode($response);
                         return;
                     }
-                    $result = sales_model::store($product_id, $cashier_id, $quantity, $price, $subtotal, $payment_method);
+                    $result = sales_model::store($product_id, $cashier_id, $quantity, $price, $subtotal, $payment_method, $discount, $tax, $shipping_cost);
 
                     if($result) {
                         $stock = [

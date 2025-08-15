@@ -3,7 +3,7 @@
 class sales_model extends ceemain{
 
 
-    public static function store($product_id, $cashier_id, $quantity, $price, $subtotal, $payment_method) {
+    public static function store($product_id, $cashier_id, $quantity, $price, $subtotal, $payment_method, $discount, $tax, $shipping_cost) {
         $key = configurations::systemkey();
         $date = date("YmdHis", time());
         $sql = "INSERT INTO sales 
@@ -12,6 +12,9 @@ class sales_model extends ceemain{
                 cashier_id = AES_ENCRYPT('".$cashier_id."','".$key."'), 
                 quantity = AES_ENCRYPT('".$quantity."','".$key."'), 
                 price = AES_ENCRYPT('".$price."','".$key."'), 
+                discount = AES_ENCRYPT('".$discount."','".$key."'), 
+                tax = AES_ENCRYPT('".$tax."','".$key."'), 
+                shipping_cost = AES_ENCRYPT('".$shipping_cost."','".$key."'), 
                 subtotal = AES_ENCRYPT('".$subtotal."','".$key."'), 
                 payment_method = AES_ENCRYPT('".$payment_method."','".$key."'), 
                 created_at = AES_ENCRYPT('".$date."','".$key."')";
@@ -33,6 +36,9 @@ class sales_model extends ceemain{
                 AES_DECRYPT(s.cashier_id, '".$key."') AS cashier_id, 
                 AES_DECRYPT(s.quantity, '".$key."') AS quantity, 
                 AES_DECRYPT(s.price, '".$key."') AS price, 
+                AES_DECRYPT(s.discount, '".$key."') AS discount, 
+                AES_DECRYPT(s.tax, '".$key."') AS tax, 
+                AES_DECRYPT(s.shipping_cost, '".$key."') AS shipping_cost, 
                 AES_DECRYPT(s.subtotal, '".$key."') AS subtotal, 
                 AES_DECRYPT(s.payment_method, '".$key."') AS payment_method, 
                 AES_DECRYPT(s.created_at, '".$key."') AS created_at,
@@ -71,6 +77,9 @@ class sales_model extends ceemain{
                     AES_DECRYPT(s.cashier_id, '".$key."') AS cashier_id, 
                     AES_DECRYPT(s.quantity, '".$key."') AS quantity, 
                     AES_DECRYPT(s.price, '".$key."') AS price, 
+                    AES_DECRYPT(s.shipping_cost, '".$key."') AS shipping_cost, 
+                    AES_DECRYPT(s.discount, '".$key."') AS discount, 
+                    AES_DECRYPT(s.tax, '".$key."') AS tax, 
                     AES_DECRYPT(s.subtotal, '".$key."') AS subtotal, 
                     AES_DECRYPT(s.payment_method, '".$key."') AS payment_method, 
                     AES_DECRYPT(s.created_at, '".$key."') AS created_at,

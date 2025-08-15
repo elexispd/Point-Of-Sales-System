@@ -5,7 +5,7 @@
 
 
 //autoload models
-$dbmodel = ['auth_model', 'configurations', 'users_model', 'roles_model','permissions_model', 'products_model', 'stocks_model', 'category_model', 'supplies_model', 'purchases_model', 'sales_model', 'expenses_model', 'incomes_model', 'logs_model' ];
+$dbmodel = ['auth_model', 'configurations', 'users_model', 'roles_model','permissions_model', 'products_model', 'stocks_model', 'category_model', 'supplies_model', 'purchases_model', 'sales_model', 'expenses_model', 'incomes_model', 'logs_model', 'pins_model' ];
 
  
 
